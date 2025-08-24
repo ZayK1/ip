@@ -25,15 +25,18 @@ public class Kiwi {
             } else if (line.equalsIgnoreCase("List")) {
                 System.out.println(displayTodoList(toDoList));
                 System.out.println("___________________________________");
-            } else if (line.equalsIgnoreCase("mark")) {
-
+            } else if (isMarkCommand(line)) {
+                int taskId = Integer.parseInt(line.split(" ")[1]);
+                mark(taskId, toDoList);
+            } else if (isUnmarkCommand(line)) {
+                int taskId = Integer.parseInt(line.split(" ")[1]);
+                unmark(taskId, toDoList);
             } else {
                 addTask(new Task(line), toDoList);
                 System.out.println("___________________________________");
             }
         }
     }
-
     public void displayLogo() {
         System.out.println("___________________________________");
         String logo = " _  __  _  _      _  _ \n"
@@ -44,7 +47,6 @@ public class Kiwi {
         System.out.println("Hello from\n" + logo);
         System.out.println("___________________________________");
     }
-
     public String displayTodoList(TaskList list) {
         return list.toString();
     }
@@ -52,6 +54,32 @@ public class Kiwi {
     public void addTask(Task task, TaskList list) {
         list.add(task);
     }
+
+    public void mark(int taskId, TaskList list) {
+        list.mark(taskId - 1);
+        System.out.println("Nice! Task done!");
+        System.out.println(list.get(taskId - 1));
+        System.out.println("___________________________________");
+
+    }
+
+    public void unmark(int taskId, TaskList list) {
+        list.unmark(taskId - 1);
+        System.out.println("Alright, Task has been marked undone");
+        System.out.println(list.get(taskId - 1));
+        System.out.println("___________________________________");
+
+    }
+
+    public boolean isMarkCommand(String command) {
+        return command.startsWith("mark ");
+    }
+
+    public boolean isUnmarkCommand(String command) {
+        return command.startsWith("unmark ");
+    }
+
+
     public static void main(String[] args) {
         Kiwi kiwi = new Kiwi();
         kiwi.run();

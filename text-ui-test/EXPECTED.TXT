@@ -1,7 +1,59 @@
+___________________________________
 Hello from
- ____        _        
-|  _ \ _   _| | _____ 
-| | | | | | | |/ / _ \
-| |_| | |_| |   <  __/
-|____/ \__,_|_|\_\___|
+ _  __  _  _      _  _ 
+| |/ / | || |    | || |
+| ' /  | || | __ | || |
+| . \  | || |/ _\| || |
+|_|\_\ |_|||_\__/|_||_|
 
+___________________________________
+What can I do for you? 
+
+___________________________________
+Your query: 
+___________________________________
+added: Stodo borrow book
+___________________________________
+Your query: 
+___________________________________
+added: return book
+___________________________________
+Your query: 
+___________________________________
+added: project meeting
+___________________________________
+Your query: 
+___________________________________
+1. [T][]:Stodo borrow book
+2. [D][]:return book (by: Sunday)
+3. [E][]:project meeting (from: Mon 2pm to: 4pm)
+Tasks left to complete: 3
+___________________________________
+Your query: 
+___________________________________
+Nice! Task done!
+[T][X]:Stodo borrow book
+___________________________________
+Your query: 
+___________________________________
+1. [T][X]:Stodo borrow book
+2. [D][]:return book (by: Sunday)
+3. [E][]:project meeting (from: Mon 2pm to: 4pm)
+Tasks left to complete: 3
+___________________________________
+Your query: 
+___________________________________
+Alright, Task has been marked undone
+[T][]:Stodo borrow book
+___________________________________
+Your query: 
+___________________________________
+1. [T][]:Stodo borrow book
+2. [D][]:return book (by: Sunday)
+3. [E][]:project meeting (from: Mon 2pm to: 4pm)
+Tasks left to complete: 3
+___________________________________
+Your query: 
+___________________________________
+Bye, see you again :)
+___________________________________

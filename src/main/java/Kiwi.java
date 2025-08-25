@@ -31,8 +31,14 @@ public class Kiwi {
             } else if (isUnmarkCommand(line)) {
                 int taskId = Integer.parseInt(line.split(" ")[1]);
                 unmark(taskId, toDoList);
+            } else if (line.startsWith("todo")) {
+                handleTodoCommand(line);
+            } else if (line.startsWith("deadline")) {
+                handleDeadlineCommand(line);
+            } else if (line.startsWith("event")) {
+                handleEventCommand(line);
             } else {
-                addTask(new Task(line), toDoList);
+                addTask(new Todo(line), toDoList);
                 System.out.println("___________________________________");
             }
         }
@@ -77,6 +83,51 @@ public class Kiwi {
 
     public boolean isUnmarkCommand(String command) {
         return command.startsWith("unmark ");
+    }
+
+    public void handleTodoCommand(String line) {
+        String description = line.substring(5);
+        Todo todo = new Todo(description);
+        addTask(todo, toDoList);
+        System.out.println("___________________________________");
+    }
+
+    public void handleDeadlineCommand(String line) {
+        try {
+            String[] parts =  line.substring(9).split(" /by ", 2);
+            if (parts.length != 2) {
+                throw new IllegalArgumentException("Invalid deadline format. Use: deadline <description> /by <time>");
+            }
+            String description = parts[0];
+            String deadline = parts[1];
+            Deadline task = new Deadline(description, deadline);
+            addTask(task, toDoList);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+        System.out.println("___________________________________");
+    }
+
+    public void handleEventCommand(String line) {
+        try {
+            String[] firstSplit = line.substring(6).split(" /from ", 2);
+            if (firstSplit.length != 2) {
+                throw new IllegalArgumentException("Invalid event format. Use: event <description> /from <start> /to <end>");
+            }
+            String description = firstSplit[0];
+            String[] timeParts = firstSplit[1].split(" /to ", 2);
+            if (timeParts.length != 2) {
+                throw new IllegalArgumentException("Invalid event format. Use: event <description> /from <start> /to <end>");
+            }
+            String from = timeParts[0];
+            String to = timeParts[1];
+            Event event = new Event(description, from, to);
+
+            addTask(event, toDoList);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+        System.out.println("___________________________________");
     }
 
 

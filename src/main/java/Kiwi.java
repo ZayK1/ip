@@ -14,32 +14,41 @@ public class Kiwi {
         System.out.println("___________________________________");
 
 
+
         while (true) {
             System.out.println("Your query: ");
             String line = input.nextLine();
             System.out.println("___________________________________");
-            if (line.equalsIgnoreCase("bye")) {
-                System.out.println("Bye, see you again :)");
-                System.out.println("___________________________________");
-                break;
-            } else if (line.equalsIgnoreCase("List")) {
-                System.out.println(displayTodoList(toDoList));
-                System.out.println("___________________________________");
-            } else if (isMarkCommand(line)) {
-                int taskId = Integer.parseInt(line.split(" ")[1]);
-                mark(taskId, toDoList);
-            } else if (isUnmarkCommand(line)) {
-                int taskId = Integer.parseInt(line.split(" ")[1]);
-                unmark(taskId, toDoList);
-            } else if (line.startsWith("todo")) {
-                handleTodoCommand(line);
-            } else if (line.startsWith("deadline")) {
-                handleDeadlineCommand(line);
-            } else if (line.startsWith("event")) {
-                handleEventCommand(line);
-            } else {
-                addTask(new Todo(line), toDoList);
-                System.out.println("___________________________________");
+
+            try {
+                if (line.equalsIgnoreCase("bye")) {
+                    System.out.println("Bye, see you again :)");
+                    System.out.println("___________________________________");
+                    break;
+                } else if (line.equalsIgnoreCase("list")) {
+                    System.out.println(displayTodoList(toDoList));
+                    System.out.println("___________________________________");
+                } else if (isMarkCommand(line)) {
+                    handleMarkCommand(line);
+                } else if (isUnmarkCommand(line)) {
+                    handleUnmarkCommand(line);
+                } else if (line.startsWith("todo")) {
+                    handleTodoCommand(line);
+                } else if (line.startsWith("deadline")) {
+                    handleDeadlineCommand(line);
+                } else if (line.startsWith("event")) {
+                    handleEventCommand(line);
+                } else {
+                    throw new UnknownCommandException();
+                }
+            } catch (KiwiException e) {
+                System.out.println("____________________________________________________________");
+                System.out.println(e.getMessage());
+                System.out.println("____________________________________________________________");
+            } catch (Exception e) {
+                System.out.println("____________________________________________________________");
+                System.out.println("Something unexpected happened: " + e.getMessage());
+                System.out.println("____________________________________________________________");
             }
         }
     }
@@ -85,51 +94,105 @@ public class Kiwi {
         return command.startsWith("unmark ");
     }
 
-    public void handleTodoCommand(String line) {
+    public void handleTodoCommand(String line) throws KiwiException {
+        if (line.trim().equals("todo") || line.length() <= 4 || line.substring(4).trim().isEmpty()) {
+            throw new EmptyDescriptionException("todo");
+        }
         String description = line.substring(5);
         Todo todo = new Todo(description);
         addTask(todo, toDoList);
         System.out.println("___________________________________");
     }
 
-    public void handleDeadlineCommand(String line) {
-        try {
-            String[] parts =  line.substring(9).split(" /by ", 2);
-            if (parts.length != 2) {
-                throw new IllegalArgumentException("Invalid deadline format. Use: deadline <description> /by <time>");
-            }
-            String description = parts[0];
-            String deadline = parts[1];
-            Deadline task = new Deadline(description, deadline);
-            addTask(task, toDoList);
-        } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+    public void handleDeadlineCommand(String line) throws KiwiException {
+        if (line.trim().equals("deadline")) {
+            throw new EmptyDescriptionException("deadline");
         }
+
+        String withoutCommand = line.substring(9);
+        int byIndex = withoutCommand.indexOf("/by");
+
+        if (byIndex == -1) {
+            throw new KiwiException("Deadline format should be: deadline <description> /by <time>");
+        }
+
+        String description = withoutCommand.substring(0, byIndex).trim();
+        String deadline = withoutCommand.substring(byIndex + 3).trim();
+
+        if (description.isEmpty()) {
+            throw new EmptyDescriptionException("deadline");
+        }
+        if (deadline.isEmpty()) {
+            throw new KiwiException("Deadline time cannot be empty");
+        }
+
+        Deadline task = new Deadline(description, deadline);
+        addTask(task, toDoList);
         System.out.println("___________________________________");
     }
 
-    public void handleEventCommand(String line) {
-        try {
-            String[] firstSplit = line.substring(6).split(" /from ", 2);
-            if (firstSplit.length != 2) {
-                throw new IllegalArgumentException("Invalid event format. Use: event <description> /from <start> /to <end>");
-            }
-            String description = firstSplit[0];
-            String[] timeParts = firstSplit[1].split(" /to ", 2);
-            if (timeParts.length != 2) {
-                throw new IllegalArgumentException("Invalid event format. Use: event <description> /from <start> /to <end>");
-            }
-            String from = timeParts[0];
-            String to = timeParts[1];
-            Event event = new Event(description, from, to);
-
-            addTask(event, toDoList);
-        } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+    public void handleEventCommand(String line) throws KiwiException {
+        if (line.trim().equals("event")) {
+            throw new EmptyDescriptionException("event");
         }
+
+        String withoutCommand = line.substring(6);
+        int fromIndex = withoutCommand.indexOf("/from");
+
+        if (fromIndex == -1) {
+            throw new KiwiException("Event format should be: event <description> /from <start> /to <end>");
+        }
+
+        String description = withoutCommand.substring(0, fromIndex).trim();
+        String timeInfo = withoutCommand.substring(fromIndex + 5);
+        int toIndex = timeInfo.indexOf("/to");
+
+        if (toIndex == -1) {
+            throw new KiwiException("Event must have both /from and /to times");
+        }
+
+        String from = timeInfo.substring(0, toIndex).trim();
+        String to = timeInfo.substring(toIndex + 3).trim();
+
+        if (description.isEmpty()) {
+            throw new EmptyDescriptionException("event");
+        }
+        if (from.isEmpty() || to.isEmpty()) {
+            throw new KiwiException("Event start and end times cannot be empty");
+        }
+
+        Event event = new Event(description, from, to);
+        addTask(event, toDoList);
         System.out.println("___________________________________");
     }
 
+    public void handleMarkCommand(String line) throws KiwiException {
+        try {
+            int taskId = Integer.parseInt(line.split(" ")[1]);
+            if (taskId < 1 || taskId > toDoList.size()) {
+                throw new KiwiException("Task number " + taskId + " doesn't exist");
+            }
+            mark(taskId, toDoList);
+        } catch (NumberFormatException e) {
+            throw new KiwiException("Please provide a valid task number to mark");
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new KiwiException("Please specify which task to mark");
+        }
+    }
+
+    public void handleUnmarkCommand(String line) throws KiwiException {
+        try {
+            int taskId = Integer.parseInt(line.split(" ")[1]);
+            if (taskId < 1 || taskId > toDoList.size()) {
+                throw new KiwiException("Task number " + taskId + " doesn't exist");
+            }
+            unmark(taskId, toDoList);
+        } catch (NumberFormatException e) {
+            throw new KiwiException("Please provide a valid task number to unmark");
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new KiwiException("Please specify which task to unmark");
+        }
+    }
 
     public static void main(String[] args) {
         Kiwi kiwi = new Kiwi();

@@ -32,6 +32,8 @@ public class Kiwi {
                     handleMarkCommand(line);
                 } else if (isUnmarkCommand(line)) {
                     handleUnmarkCommand(line);
+                } else if (isDeleteCommand(line)) {
+                    handleDeleteCommand(line);
                 } else if (line.startsWith("todo")) {
                     handleTodoCommand(line);
                 } else if (line.startsWith("deadline")) {
@@ -92,6 +94,29 @@ public class Kiwi {
 
     public boolean isUnmarkCommand(String command) {
         return command.startsWith("unmark ");
+    }
+
+    public boolean isDeleteCommand(String command) {
+        return command.startsWith("delete ");
+    }
+
+    public void handleDeleteCommand(String line) throws KiwiException {
+        try {
+            int taskId = Integer.parseInt(line.split(" ")[1]);
+            if (taskId < 1 || taskId > toDoList.size()) {
+                throw new KiwiException("Task Number" + taskId + "doesn't exist");
+            }
+            Task task = toDoList.get(taskId - 1);
+
+            toDoList.delete(taskId - 1);
+
+            System.out.println("Alright. I've removed this task:");
+            System.out.println("  " + task);
+            System.out.println("Now you have " + toDoList.size() + " tasks in the list.");
+            System.out.println("___________________________________");
+        } catch (KiwiException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     public void handleTodoCommand(String line) throws KiwiException {

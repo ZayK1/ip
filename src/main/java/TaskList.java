@@ -24,6 +24,10 @@ public class TaskList {
         this.todoList.get(index).unmark();
     }
 
+    public void delete(int index) {
+        this.todoList.remove(index);
+    }
+
     @Override
     public String toString() {
         if (todoList.isEmpty()) { return "No tasks left for today :)";}

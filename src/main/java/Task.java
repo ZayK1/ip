@@ -1,9 +1,11 @@
-public class Task {
+public abstract class Task {
     protected String description;
     protected boolean done = false;
+    protected TaskType taskType;
 
-    public Task(String description) {
+    public Task(String description, TaskType taskType) {
         this.description = description;
+        this.taskType = taskType;
     }
 
     public void mark() {
@@ -22,8 +24,12 @@ public class Task {
         return this.description;
     }
 
+    public TaskType getTaskType() {
+        return this.taskType;
+    }
+
     @Override
     public String toString() {
-        return "[" + (this.done ? "X" : "") + "]:" + this.description;
+        return taskType.toString() + "[" + (this.done ? "X" : " ") + "] " + this.description;
     }
 }

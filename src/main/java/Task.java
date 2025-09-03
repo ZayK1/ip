@@ -28,6 +28,7 @@ public abstract class Task {
         return this.taskType;
     }
 
+
     @Override
     public String toString() {
         return taskType.toString() + "[" + (this.done ? "X" : " ") + "] " + this.description;

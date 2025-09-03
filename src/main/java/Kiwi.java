@@ -1,19 +1,19 @@
-import java.awt.image.TileObserver;
-import java.util.ArrayList;
 import java.util.Scanner;
-
-
 
 public class Kiwi {
     private final Scanner input = new Scanner(System.in);
-    private final TaskList toDoList =  new TaskList();
+    private final TaskList toDoList;
+
+    public Kiwi() {
+        // Initialize storage with file path
+        Storage storage = new Storage("./data/kiwi.txt");
+        this.toDoList = new TaskList(storage);
+    }
 
     public void run() {
         displayLogo();
         System.out.println("What can I do for you? \n");
         System.out.println("___________________________________");
-
-
 
         while (true) {
             System.out.println("Your query: ");
@@ -44,16 +44,43 @@ public class Kiwi {
                     throw new UnknownCommandException();
                 }
             } catch (KiwiException e) {
-                System.out.println("____________________________________________________________");
-                System.out.println(e.getMessage());
-                System.out.println("____________________________________________________________");
+                System.out.println("    ____________________________________________________________");
+                System.out.println("     " + e.getMessage());
+                System.out.println("    ____________________________________________________________");
             } catch (Exception e) {
-                System.out.println("____________________________________________________________");
-                System.out.println("Something unexpected happened: " + e.getMessage());
-                System.out.println("____________________________________________________________");
+                System.out.println("    ____________________________________________________________");
+                System.out.println("     Something unexpected happened: " + e.getMessage());
+                System.out.println("    ____________________________________________________________");
             }
         }
     }
+
+    public boolean isDeleteCommand(String command) {
+        return command.startsWith("delete ");
+    }
+
+    public void handleDeleteCommand(String line) throws KiwiException {
+        try {
+            int taskId = Integer.parseInt(line.split(" ")[1]);
+            if (taskId < 1 || taskId > toDoList.size()) {
+                throw new KiwiException("Task number " + taskId + " doesn't exist!");
+            }
+
+            Task deletedTask = toDoList.get(taskId - 1);
+            toDoList.delete(taskId - 1);
+
+            System.out.println("Noted. I've removed this task:");
+            System.out.println("  " + deletedTask);
+            System.out.println("Now you have " + toDoList.size() + " tasks in the list.");
+            System.out.println("___________________________________");
+
+        } catch (NumberFormatException e) {
+            throw new KiwiException("Please provide a valid task number to delete!");
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new KiwiException("Please specify which task to delete!");
+        }
+    }
+
     public void displayLogo() {
         System.out.println("___________________________________");
         String logo = " _  __  _  _      _  _ \n"
@@ -64,6 +91,7 @@ public class Kiwi {
         System.out.println("Hello from\n" + logo);
         System.out.println("___________________________________");
     }
+
     public String displayTodoList(TaskList list) {
         return list.toString();
     }
@@ -77,7 +105,6 @@ public class Kiwi {
         System.out.println("Nice! Task done!");
         System.out.println(list.get(taskId - 1));
         System.out.println("___________________________________");
-
     }
 
     public void unmark(int taskId, TaskList list) {
@@ -85,7 +112,6 @@ public class Kiwi {
         System.out.println("Alright, Task has been marked undone");
         System.out.println(list.get(taskId - 1));
         System.out.println("___________________________________");
-
     }
 
     public boolean isMarkCommand(String command) {
@@ -94,29 +120,6 @@ public class Kiwi {
 
     public boolean isUnmarkCommand(String command) {
         return command.startsWith("unmark ");
-    }
-
-    public boolean isDeleteCommand(String command) {
-        return command.startsWith("delete ");
-    }
-
-    public void handleDeleteCommand(String line) throws KiwiException {
-        try {
-            int taskId = Integer.parseInt(line.split(" ")[1]);
-            if (taskId < 1 || taskId > toDoList.size()) {
-                throw new KiwiException("Task Number" + taskId + "doesn't exist");
-            }
-            Task task = toDoList.get(taskId - 1);
-
-            toDoList.delete(taskId - 1);
-
-            System.out.println("Alright. I've removed this task:");
-            System.out.println("  " + task);
-            System.out.println("Now you have " + toDoList.size() + " tasks in the list.");
-            System.out.println("___________________________________");
-        } catch (KiwiException e) {
-            System.out.println(e.getMessage());
-        }
     }
 
     public void handleTodoCommand(String line) throws KiwiException {

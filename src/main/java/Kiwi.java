@@ -1,11 +1,12 @@
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.time.LocalDate;
 
 public class Kiwi {
     private final Scanner input = new Scanner(System.in);
     private final TaskList toDoList;
 
     public Kiwi() {
-        // Initialize storage with file path
         Storage storage = new Storage("./data/kiwi.txt");
         this.toDoList = new TaskList(storage);
     }
@@ -34,6 +35,8 @@ public class Kiwi {
                     handleUnmarkCommand(line);
                 } else if (isDeleteCommand(line)) {
                     handleDeleteCommand(line);
+                } else if (line.startsWith("on ")) {
+                    handleOnCommand(line);
                 } else if (line.startsWith("todo")) {
                     handleTodoCommand(line);
                 } else if (line.startsWith("deadline")) {
@@ -220,6 +223,55 @@ public class Kiwi {
         } catch (ArrayIndexOutOfBoundsException e) {
             throw new KiwiException("Please specify which task to unmark");
         }
+    }
+
+    public void handleOnCommand(String line) throws KiwiException {
+        String dateStr = line.substring(3).trim();
+
+        if (dateStr.isEmpty()) {
+            throw new KiwiException("Please specify a date! Format: on yyyy-mm-dd or on d/m/yyyy");
+        }
+
+        LocalDate targetDate = DateTimeParser.parseDate(dateStr);
+        if (targetDate == null) {
+            throw new KiwiException("Invalid date format! Try: on 2019-12-02 or on 2/12/2019");
+        }
+
+        ArrayList<Task> tasksOnDate = new ArrayList<>();
+
+        for (int i = 0; i < toDoList.size(); i++) {
+            Task task = toDoList.get(i);
+
+            if (task instanceof Deadline) {
+                Deadline deadline = (Deadline) task;
+                if (deadline.getDate() != null && deadline.getDate().equals(targetDate)) {
+                    tasksOnDate.add(task);
+                }
+            } else if (task instanceof Event) {
+                Event event = (Event) task;
+                LocalDate startDate = event.getStartDate();
+                LocalDate endDate = event.getEndDate();
+
+                if (startDate != null && endDate != null) {
+                    if (!targetDate.isBefore(startDate) && !targetDate.isAfter(endDate)) {
+                        tasksOnDate.add(task);
+                    }
+                } else if (startDate != null && startDate.equals(targetDate)) {
+                    tasksOnDate.add(task);
+                }
+            }
+        }
+
+        String formattedDate = DateTimeParser.formatDate(targetDate);
+        if (tasksOnDate.isEmpty()) {
+            System.out.println("No tasks found on " + formattedDate + ".");
+        } else {
+            System.out.println("Here are the tasks on " + formattedDate + ":");
+            for (int i = 0; i < tasksOnDate.size(); i++) {
+                System.out.println((i + 1) + ". " + tasksOnDate.get(i));
+            }
+        }
+        System.out.println("___________________________________");
     }
 
     public static void main(String[] args) {

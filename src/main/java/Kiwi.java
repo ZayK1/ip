@@ -1,281 +1,180 @@
-import java.util.Scanner;
-import java.util.ArrayList;
 import java.time.LocalDate;
+import java.util.List;
 
+/**
+ * Main class for the Kiwi task manager application.
+ */
 public class Kiwi {
-    private final Scanner input = new Scanner(System.in);
-    private final TaskList toDoList;
+    private Storage storage;
+    private TaskList tasks;
+    private Ui ui;
 
-    public Kiwi() {
-        Storage storage = new Storage("./data/kiwi.txt");
-        this.toDoList = new TaskList(storage);
-    }
-
-    public void run() {
-        displayLogo();
-        System.out.println("What can I do for you? \n");
-        System.out.println("___________________________________");
-
-        while (true) {
-            System.out.println("Your query: ");
-            String line = input.nextLine();
-            System.out.println("___________________________________");
-
-            try {
-                if (line.equalsIgnoreCase("bye")) {
-                    System.out.println("Bye, see you again :)");
-                    System.out.println("___________________________________");
-                    break;
-                } else if (line.equalsIgnoreCase("list")) {
-                    System.out.println(displayTodoList(toDoList));
-                    System.out.println("___________________________________");
-                } else if (isMarkCommand(line)) {
-                    handleMarkCommand(line);
-                } else if (isUnmarkCommand(line)) {
-                    handleUnmarkCommand(line);
-                } else if (isDeleteCommand(line)) {
-                    handleDeleteCommand(line);
-                } else if (line.startsWith("on ")) {
-                    handleOnCommand(line);
-                } else if (line.startsWith("todo")) {
-                    handleTodoCommand(line);
-                } else if (line.startsWith("deadline")) {
-                    handleDeadlineCommand(line);
-                } else if (line.startsWith("event")) {
-                    handleEventCommand(line);
-                } else {
-                    throw new UnknownCommandException();
-                }
-            } catch (KiwiException e) {
-                System.out.println("    ____________________________________________________________");
-                System.out.println("     " + e.getMessage());
-                System.out.println("    ____________________________________________________________");
-            } catch (Exception e) {
-                System.out.println("    ____________________________________________________________");
-                System.out.println("     Something unexpected happened: " + e.getMessage());
-                System.out.println("    ____________________________________________________________");
-            }
-        }
-    }
-
-    public boolean isDeleteCommand(String command) {
-        return command.startsWith("delete ");
-    }
-
-    public void handleDeleteCommand(String line) throws KiwiException {
+    public Kiwi(String filePath) {
+        ui = new Ui();
+        storage = new Storage(filePath);
         try {
-            int taskId = Integer.parseInt(line.split(" ")[1]);
-            if (taskId < 1 || taskId > toDoList.size()) {
-                throw new KiwiException("Task number " + taskId + " doesn't exist!");
+            tasks = new TaskList(storage.loadTasks());
+        } catch (KiwiException e) {
+            ui.showLoadingError();
+            tasks = new TaskList();
+        }
+    }
+
+    /**
+     * Main run loop for the application.
+     */
+    public void run() {
+        ui.showWelcome();
+
+        boolean isExit = false;
+        while (!isExit) {
+            try {
+                String fullCommand = ui.readCommand();
+                ui.showLine();
+
+                Parser.CommandType commandType = Parser.getCommandType(fullCommand);
+
+                switch (commandType) {
+                    case BYE:
+                        handleByeCommand();
+                        isExit = true;
+                        break;
+                    case LIST:
+                        handleListCommand();
+                        break;
+                    case MARK:
+                        handleMarkCommand(fullCommand);
+                        break;
+                    case UNMARK:
+                        handleUnmarkCommand(fullCommand);
+                        break;
+                    case DELETE:
+                        handleDeleteCommand(fullCommand);
+                        break;
+                    case TODO:
+                        handleTodoCommand(fullCommand);
+                        break;
+                    case DEADLINE:
+                        handleDeadlineCommand(fullCommand);
+                        break;
+                    case EVENT:
+                        handleEventCommand(fullCommand);
+                        break;
+                    case ON:
+                        handleOnCommand(fullCommand);
+                        break;
+                    case UNKNOWN:
+                    default:
+                        throw new UnknownCommandException();
+                }
+
+            } catch (KiwiException e) {
+                ui.showError(e.getMessage());
+            } catch (Exception e) {
+                ui.showError("Something unexpected happened: " + e.getMessage());
             }
-
-            Task deletedTask = toDoList.get(taskId - 1);
-            toDoList.delete(taskId - 1);
-
-            System.out.println("Noted. I've removed this task:");
-            System.out.println("  " + deletedTask);
-            System.out.println("Now you have " + toDoList.size() + " tasks in the list.");
-            System.out.println("___________________________________");
-
-        } catch (NumberFormatException e) {
-            throw new KiwiException("Please provide a valid task number to delete!");
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new KiwiException("Please specify which task to delete!");
         }
+
+        ui.close();
     }
 
-    public void displayLogo() {
-        System.out.println("___________________________________");
-        String logo = " _  __  _  _      _  _ \n"
-                + "| |/ / | || |    | || |\n"
-                + "| ' /  | || | __ | || |\n"
-                + "| . \\  | || |/ _\\| || |\n"
-                + "|_|\\_\\ |_|||_\\__/|_||_|\n";
-        System.out.println("Hello from\n" + logo);
-        System.out.println("___________________________________");
+    private void handleByeCommand() {
+        ui.showGoodbye();
     }
 
-    public String displayTodoList(TaskList list) {
-        return list.toString();
+    private void handleListCommand() {
+        ui.showTaskList(tasks);
     }
 
-    public void addTask(Task task, TaskList list) {
-        list.add(task);
-    }
+    private void handleMarkCommand(String command) throws KiwiException {
+        int taskNumber = Parser.parseTaskNumber(command, "mark");
+        int index = taskNumber - 1;
 
-    public void mark(int taskId, TaskList list) {
-        list.mark(taskId - 1);
-        System.out.println("Nice! Task done!");
-        System.out.println(list.get(taskId - 1));
-        System.out.println("___________________________________");
-    }
-
-    public void unmark(int taskId, TaskList list) {
-        list.unmark(taskId - 1);
-        System.out.println("Alright, Task has been marked undone");
-        System.out.println(list.get(taskId - 1));
-        System.out.println("___________________________________");
-    }
-
-    public boolean isMarkCommand(String command) {
-        return command.startsWith("mark ");
-    }
-
-    public boolean isUnmarkCommand(String command) {
-        return command.startsWith("unmark ");
-    }
-
-    public void handleTodoCommand(String line) throws KiwiException {
-        if (line.trim().equals("todo") || line.length() <= 4 || line.substring(4).trim().isEmpty()) {
-            throw new EmptyDescriptionException("todo");
+        if (!tasks.isValidIndex(index)) {
+            throw new KiwiException("Task number " + taskNumber + " doesn't exist");
         }
-        String description = line.substring(5);
+
+        tasks.markTask(index);
+        saveTasksToStorage();
+        ui.showTaskMarked(tasks.getTask(index));
+    }
+
+    private void handleUnmarkCommand(String command) throws KiwiException {
+        int taskNumber = Parser.parseTaskNumber(command, "unmark");
+        int index = taskNumber - 1;
+
+        if (!tasks.isValidIndex(index)) {
+            throw new KiwiException("Task number " + taskNumber + " doesn't exist");
+        }
+
+        tasks.unmarkTask(index);
+        saveTasksToStorage();
+        ui.showTaskUnmarked(tasks.getTask(index));
+    }
+
+    private void handleDeleteCommand(String command) throws KiwiException {
+        int taskNumber = Parser.parseTaskNumber(command, "delete");
+        int index = taskNumber - 1;
+
+        if (!tasks.isValidIndex(index)) {
+            throw new KiwiException("Task number " + taskNumber + " doesn't exist");
+        }
+
+        Task deletedTask = tasks.deleteTask(index);
+        saveTasksToStorage();
+        ui.showTaskDeleted(deletedTask, tasks.size());
+    }
+
+    private void handleTodoCommand(String command) throws KiwiException {
+        String description = Parser.parseTodoCommand(command);
         Todo todo = new Todo(description);
-        addTask(todo, toDoList);
-        System.out.println("___________________________________");
+        tasks.addTask(todo);
+        saveTasksToStorage();
+        ui.showTaskAdded(todo, tasks.size());
     }
 
-    public void handleDeadlineCommand(String line) throws KiwiException {
-        if (line.trim().equals("deadline")) {
-            throw new EmptyDescriptionException("deadline");
-        }
-
-        String withoutCommand = line.substring(9);
-        int byIndex = withoutCommand.indexOf("/by");
-
-        if (byIndex == -1) {
-            throw new KiwiException("Deadline format should be: deadline <description> /by <time>");
-        }
-
-        String description = withoutCommand.substring(0, byIndex).trim();
-        String deadline = withoutCommand.substring(byIndex + 3).trim();
-
-        if (description.isEmpty()) {
-            throw new EmptyDescriptionException("deadline");
-        }
-        if (deadline.isEmpty()) {
-            throw new KiwiException("Deadline time cannot be empty");
-        }
+    private void handleDeadlineCommand(String command) throws KiwiException {
+        String[] parts = Parser.parseDeadlineCommand(command);
+        String description = parts[0];
+        String deadline = parts[1];
 
         Deadline task = new Deadline(description, deadline);
-        addTask(task, toDoList);
-        System.out.println("___________________________________");
+        tasks.addTask(task);
+        saveTasksToStorage();
+        ui.showTaskAdded(task, tasks.size());
     }
 
-    public void handleEventCommand(String line) throws KiwiException {
-        if (line.trim().equals("event")) {
-            throw new EmptyDescriptionException("event");
-        }
-
-        String withoutCommand = line.substring(6);
-        int fromIndex = withoutCommand.indexOf("/from");
-
-        if (fromIndex == -1) {
-            throw new KiwiException("Event format should be: event <description> /from <start> /to <end>");
-        }
-
-        String description = withoutCommand.substring(0, fromIndex).trim();
-        String timeInfo = withoutCommand.substring(fromIndex + 5);
-        int toIndex = timeInfo.indexOf("/to");
-
-        if (toIndex == -1) {
-            throw new KiwiException("Event must have both /from and /to times");
-        }
-
-        String from = timeInfo.substring(0, toIndex).trim();
-        String to = timeInfo.substring(toIndex + 3).trim();
-
-        if (description.isEmpty()) {
-            throw new EmptyDescriptionException("event");
-        }
-        if (from.isEmpty() || to.isEmpty()) {
-            throw new KiwiException("Event start and end times cannot be empty");
-        }
+    private void handleEventCommand(String command) throws KiwiException {
+        String[] parts = Parser.parseEventCommand(command);
+        String description = parts[0];
+        String from = parts[1];
+        String to = parts[2];
 
         Event event = new Event(description, from, to);
-        addTask(event, toDoList);
-        System.out.println("___________________________________");
+        tasks.addTask(event);
+        saveTasksToStorage();
+        ui.showTaskAdded(event, tasks.size());
     }
 
-    public void handleMarkCommand(String line) throws KiwiException {
-        try {
-            int taskId = Integer.parseInt(line.split(" ")[1]);
-            if (taskId < 1 || taskId > toDoList.size()) {
-                throw new KiwiException("Task number " + taskId + " doesn't exist");
-            }
-            mark(taskId, toDoList);
-        } catch (NumberFormatException e) {
-            throw new KiwiException("Please provide a valid task number to mark");
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new KiwiException("Please specify which task to mark");
-        }
-    }
-
-    public void handleUnmarkCommand(String line) throws KiwiException {
-        try {
-            int taskId = Integer.parseInt(line.split(" ")[1]);
-            if (taskId < 1 || taskId > toDoList.size()) {
-                throw new KiwiException("Task number " + taskId + " doesn't exist");
-            }
-            unmark(taskId, toDoList);
-        } catch (NumberFormatException e) {
-            throw new KiwiException("Please provide a valid task number to unmark");
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new KiwiException("Please specify which task to unmark");
-        }
-    }
-
-    public void handleOnCommand(String line) throws KiwiException {
-        String dateStr = line.substring(3).trim();
-
-        if (dateStr.isEmpty()) {
-            throw new KiwiException("Please specify a date! Format: on yyyy-mm-dd or on d/m/yyyy");
-        }
-
-        LocalDate targetDate = DateTimeParser.parseDate(dateStr);
-        if (targetDate == null) {
-            throw new KiwiException("Invalid date format! Try: on 2019-12-02 or on 2/12/2019");
-        }
-
-        ArrayList<Task> tasksOnDate = new ArrayList<>();
-
-        for (int i = 0; i < toDoList.size(); i++) {
-            Task task = toDoList.get(i);
-
-            if (task instanceof Deadline) {
-                Deadline deadline = (Deadline) task;
-                if (deadline.getDate() != null && deadline.getDate().equals(targetDate)) {
-                    tasksOnDate.add(task);
-                }
-            } else if (task instanceof Event) {
-                Event event = (Event) task;
-                LocalDate startDate = event.getStartDate();
-                LocalDate endDate = event.getEndDate();
-
-                if (startDate != null && endDate != null) {
-                    if (!targetDate.isBefore(startDate) && !targetDate.isAfter(endDate)) {
-                        tasksOnDate.add(task);
-                    }
-                } else if (startDate != null && startDate.equals(targetDate)) {
-                    tasksOnDate.add(task);
-                }
-            }
-        }
-
+    private void handleOnCommand(String command) throws KiwiException {
+        LocalDate targetDate = Parser.parseOnCommand(command);
+        List<Task> tasksOnDate = tasks.getTasksOnDate(targetDate);
         String formattedDate = DateTimeParser.formatDate(targetDate);
-        if (tasksOnDate.isEmpty()) {
-            System.out.println("No tasks found on " + formattedDate + ".");
-        } else {
-            System.out.println("Here are the tasks on " + formattedDate + ":");
-            for (int i = 0; i < tasksOnDate.size(); i++) {
-                System.out.println((i + 1) + ". " + tasksOnDate.get(i));
-            }
+        ui.showTasksOnDate(tasksOnDate, formattedDate);
+    }
+
+    /**
+     * Saves tasks to storage.
+     */
+    private void saveTasksToStorage() {
+        try {
+            storage.saveTasks(tasks.getTasks());
+        } catch (KiwiException e) {
+            ui.showError("Warning: Could not save tasks - " + e.getMessage());
         }
-        System.out.println("___________________________________");
     }
 
     public static void main(String[] args) {
-        Kiwi kiwi = new Kiwi();
-        kiwi.run();
+        new Kiwi("./data/kiwi.txt").run();
     }
 }

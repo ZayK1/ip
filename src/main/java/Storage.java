@@ -14,6 +14,7 @@ public class Storage {
 
     public Storage(String filePath) {
         this.filePath = filePath;
+        // Extract directory path from file path
         Path path = Paths.get(filePath);
         this.directoryPath = path.getParent() != null ? path.getParent().toString() : "";
     }

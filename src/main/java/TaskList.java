@@ -1,79 +1,116 @@
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Manages a list of tasks.
+ */
 public class TaskList {
-    private final ArrayList<Task> todoList = new ArrayList<>();
-    private final Storage storage;
+    private final ArrayList<Task> tasks = new ArrayList<>();
 
-    public TaskList(Storage storage) {
-        this.storage = storage;
-        loadTasksFromStorage();
+    public TaskList() {
+        // Empty constructor for new task list
+    }
+
+    public TaskList(List<Task> tasks) {
+        this.tasks.addAll(tasks);
     }
 
     /**
-     * Loads tasks from storage on initialization.
+     * Adds a task to the list.
      */
-    private void loadTasksFromStorage() {
-        try {
-            List<Task> loadedTasks = storage.loadTasks();
-            todoList.addAll(loadedTasks);
-        } catch (KiwiException e) {
-            System.out.println("Warning: " + e.getMessage());
-            System.out.println("Starting with empty task list.");
-        }
+    public void addTask(Task task) {
+        this.tasks.add(task);
     }
 
     /**
-     * Saves tasks to storage.
+     * Deletes a task from the list by index.
      */
-    private void saveTasksToStorage() {
-        try {
-            storage.saveTasks(todoList);
-        } catch (KiwiException e) {
-            System.out.println("Warning: Could not save tasks - " + e.getMessage());
-        }
+    public Task deleteTask(int index) {
+        return this.tasks.remove(index);
     }
 
-    public void add(Task task) {
-        this.todoList.add(task);
-        System.out.println("Got it. I've added this task:");
-        System.out.println("  " + task);
-        System.out.println("Now you have " + this.todoList.size() + " tasks in the list.");
-        saveTasksToStorage(); // Auto-save after adding
+    /**
+     * Gets a task by index.
+     */
+    public Task getTask(int index) {
+        return this.tasks.get(index);
     }
 
-    public void delete(int index) {
-        this.todoList.remove(index);
-        saveTasksToStorage(); // Auto-save after deleting
+    /**
+     * Marks a task as done.
+     */
+    public void markTask(int index) {
+        this.tasks.get(index).mark();
     }
 
+    /**
+     * Marks a task as not done.
+     */
+    public void unmarkTask(int index) {
+        this.tasks.get(index).unmark();
+    }
+
+    /**
+     * Returns the number of tasks.
+     */
     public int size() {
-        return this.todoList.size();
+        return this.tasks.size();
     }
 
-    public Task get(int index) {
-        return this.todoList.get(index);
+    /**
+     * Returns all tasks as a list.
+     */
+    public List<Task> getTasks() {
+        return new ArrayList<>(tasks);
     }
 
-    public void mark(int index) {
-        this.todoList.get(index).mark();
-        saveTasksToStorage(); // Auto-save after marking
+    /**
+     * Checks if the task index is valid.
+     */
+    public boolean isValidIndex(int index) {
+        return index >= 0 && index < tasks.size();
     }
 
-    public void unmark(int index) {
-        this.todoList.get(index).unmark();
-        saveTasksToStorage(); // Auto-save after unmarking
+    /**
+     * Returns tasks that occur on a specific date.
+     */
+    public List<Task> getTasksOnDate(java.time.LocalDate targetDate) {
+        List<Task> tasksOnDate = new ArrayList<>();
+
+        for (Task task : tasks) {
+            if (task instanceof Deadline) {
+                Deadline deadline = (Deadline) task;
+                if (deadline.getDate() != null && deadline.getDate().equals(targetDate)) {
+                    tasksOnDate.add(task);
+                }
+            } else if (task instanceof Event) {
+                Event event = (Event) task;
+                java.time.LocalDate startDate = event.getStartDate();
+                java.time.LocalDate endDate = event.getEndDate();
+
+                // Check if target date falls within event date range
+                if (startDate != null && endDate != null) {
+                    if (!targetDate.isBefore(startDate) && !targetDate.isAfter(endDate)) {
+                        tasksOnDate.add(task);
+                    }
+                } else if (startDate != null && startDate.equals(targetDate)) {
+                    tasksOnDate.add(task);
+                }
+            }
+        }
+
+        return tasksOnDate;
     }
 
     @Override
     public String toString() {
-        if (todoList.isEmpty()) {
+        if (tasks.isEmpty()) {
             return "No tasks in your list.";
         }
         StringBuilder sb = new StringBuilder();
         sb.append("Here are the tasks in your list:\n");
-        for (int i = 0; i < todoList.size(); i++) {
-            sb.append((i + 1) + "." + todoList.get(i) + "\n");
+        for (int i = 0; i < tasks.size(); i++) {
+            sb.append((i + 1) + "." + tasks.get(i) + "\n");
         }
         return sb.toString();
     }

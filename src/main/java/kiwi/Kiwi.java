@@ -77,6 +77,9 @@ public class Kiwi {
                     case ON:
                         handleOnCommand(fullCommand);
                         break;
+                    case FIND:
+                        handleFindCommand(fullCommand);
+                        break;
                     case UNKNOWN:
                     default:
                         throw new UnknownCommandException();
@@ -111,6 +114,12 @@ public class Kiwi {
         tasks.markTask(index);
         saveTasksToStorage();
         ui.showTaskMarked(tasks.getTask(index));
+    }
+
+    private void handleFindCommand(String command) throws KiwiException {
+        String keyword = Parser.parseFindCommand(command);
+        List<Task> foundTasks = tasks.findTasks(keyword);
+        ui.showFoundTasks(foundTasks);
     }
 
     private void handleUnmarkCommand(String command) throws KiwiException {

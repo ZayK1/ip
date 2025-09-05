@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class Parser {
 
     public enum CommandType {
-        BYE, LIST, MARK, UNMARK, DELETE, TODO, DEADLINE, EVENT, ON, UNKNOWN
+        BYE, LIST, MARK, UNMARK, DELETE, TODO, DEADLINE, EVENT, FIND, ON, UNKNOWN
     }
 
     /**
@@ -39,6 +39,8 @@ public class Parser {
             return CommandType.EVENT;
         } else if (trimmed.startsWith("on ")) {
             return CommandType.ON;
+        } else if (trimmed.startsWith("find ")) {
+            return CommandType.FIND;
         } else {
             return CommandType.UNKNOWN;
         }
@@ -151,4 +153,14 @@ public class Parser {
 
         return targetDate;
     }
+    /**
+     * Parses a find command and returns the search keyword.
+     */
+    public static String parseFindCommand(String input) throws KiwiException {
+        if (input.trim().equals("find") || input.length() <= 4 || input.substring(4).trim().isEmpty()) {
+            throw new KiwiException("Please specify a keyword to search for!");
+        }
+        return input.substring(5).trim();
+    }
+
 }

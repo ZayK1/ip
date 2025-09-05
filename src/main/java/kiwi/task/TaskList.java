@@ -9,7 +9,6 @@ public class TaskList {
     private final ArrayList<Task> tasks = new ArrayList<>();
 
     public TaskList() {
-        // Empty constructor for new task list
     }
 
     public TaskList(List<Task> tasks) {
@@ -101,6 +100,22 @@ public class TaskList {
         }
 
         return tasksOnDate;
+    }
+
+    /**
+     * Returns tasks that contain the specified keyword in their description.
+     */
+    public List<Task> findTasks(String keyword) {
+        List<Task> matchingTasks = new ArrayList<>();
+        String lowerKeyword = keyword.toLowerCase();
+
+        for (Task task : tasks) {
+            if (task.getDescription().toLowerCase().contains(lowerKeyword)) {
+                matchingTasks.add(task);
+            }
+        }
+
+        return matchingTasks;
     }
 
     @Override

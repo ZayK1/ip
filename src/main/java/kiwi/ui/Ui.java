@@ -1,5 +1,9 @@
-import java.util.Scanner;
+package kiwi.ui;
 
+import kiwi.task.TaskList;
+import kiwi.task.Task;
+
+import java.util.Scanner;
 /**
  * Handles interactions with the user.
  */

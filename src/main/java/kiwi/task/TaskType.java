@@ -1,3 +1,4 @@
+package kiwi.task;
 public enum TaskType {
     TODO("T"),
     DEADLINE("D"),

@@ -1,3 +1,10 @@
+package kiwi.storage;
+
+import kiwi.task.Task;
+import kiwi.task.Deadline;
+import kiwi.task.Event;
+import kiwi.task.Todo;
+import kiwi.exception.KiwiException;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;

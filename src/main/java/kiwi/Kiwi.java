@@ -1,7 +1,5 @@
-
 package kiwi;
 
-import kiwi.ui.Ui;
 import kiwi.parser.Parser;
 import kiwi.storage.Storage;
 import kiwi.storage.DateTimeParser;
@@ -15,95 +13,84 @@ import kiwi.exception.UnknownCommandException;
 
 import java.time.LocalDate;
 import java.util.List;
+
 /**
  * Main class for the Kiwi task manager application.
  */
 public class Kiwi {
     private Storage storage;
     private TaskList tasks;
-    private Ui ui;
 
+    /**
+     * Constructs a new Kiwi application with the specified file path for data storage.
+     */
     public Kiwi(String filePath) {
-        ui = new Ui();
         storage = new Storage(filePath);
         try {
             tasks = new TaskList(storage.loadTasks());
         } catch (KiwiException e) {
-            ui.showLoadingError();
             tasks = new TaskList();
         }
     }
 
     /**
-     * Main run loop for the application.
+     * Generates a response for the user's chat message.
      */
-    public void run() {
-        ui.showWelcome();
+    public String getResponse(String input) {
+        try {
+            Parser.CommandType commandType = Parser.getCommandType(input);
 
-        boolean isExit = false;
-        while (!isExit) {
-            try {
-                String fullCommand = ui.readCommand();
-                ui.showLine();
+            switch (commandType) {
+                case BYE:
+                    return "Bye! Hope to see you again soon!";
 
-                Parser.CommandType commandType = Parser.getCommandType(fullCommand);
+                case LIST:
+                    return handleListCommand();
 
-                switch (commandType) {
-                    case BYE:
-                        handleByeCommand();
-                        isExit = true;
-                        break;
-                    case LIST:
-                        handleListCommand();
-                        break;
-                    case MARK:
-                        handleMarkCommand(fullCommand);
-                        break;
-                    case UNMARK:
-                        handleUnmarkCommand(fullCommand);
-                        break;
-                    case DELETE:
-                        handleDeleteCommand(fullCommand);
-                        break;
-                    case TODO:
-                        handleTodoCommand(fullCommand);
-                        break;
-                    case DEADLINE:
-                        handleDeadlineCommand(fullCommand);
-                        break;
-                    case EVENT:
-                        handleEventCommand(fullCommand);
-                        break;
-                    case ON:
-                        handleOnCommand(fullCommand);
-                        break;
-                    case FIND:
-                        handleFindCommand(fullCommand);
-                        break;
-                    case UNKNOWN:
-                    default:
-                        throw new UnknownCommandException();
-                }
+                case MARK:
+                    return handleMarkCommand(input);
 
-            } catch (KiwiException e) {
-                ui.showError(e.getMessage());
-            } catch (Exception e) {
-                ui.showError("Something unexpected happened: " + e.getMessage());
+                case UNMARK:
+                    return handleUnmarkCommand(input);
+
+                case DELETE:
+                    return handleDeleteCommand(input);
+
+                case TODO:
+                    return handleTodoCommand(input);
+
+                case DEADLINE:
+                    return handleDeadlineCommand(input);
+
+                case EVENT:
+                    return handleEventCommand(input);
+
+                case ON:
+                    return handleOnCommand(input);
+
+                case FIND:
+                    return handleFindCommand(input);
+
+                case UNKNOWN:
+                default:
+                    throw new UnknownCommandException();
             }
+
+        } catch (KiwiException e) {
+            return "Error: " + e.getMessage();
+        } catch (Exception e) {
+            return "Something unexpected happened: " + e.getMessage();
         }
-
-        ui.close();
     }
 
-    private void handleByeCommand() {
-        ui.showGoodbye();
+    private String handleListCommand() {
+        if (tasks.size() == 0) {
+            return "You have no tasks in your list.";
+        }
+        return "Here are the tasks in your list:\n" + tasks.toString();
     }
 
-    private void handleListCommand() {
-        ui.showTaskList(tasks);
-    }
-
-    private void handleMarkCommand(String command) throws KiwiException {
+    private String handleMarkCommand(String command) throws KiwiException {
         int taskNumber = Parser.parseTaskNumber(command, "mark");
         int index = taskNumber - 1;
 
@@ -113,16 +100,10 @@ public class Kiwi {
 
         tasks.markTask(index);
         saveTasksToStorage();
-        ui.showTaskMarked(tasks.getTask(index));
+        return "Nice! I've marked this task as done:\n" + tasks.getTask(index);
     }
 
-    private void handleFindCommand(String command) throws KiwiException {
-        String keyword = Parser.parseFindCommand(command);
-        List<Task> foundTasks = tasks.findTasks(keyword);
-        ui.showFoundTasks(foundTasks);
-    }
-
-    private void handleUnmarkCommand(String command) throws KiwiException {
+    private String handleUnmarkCommand(String command) throws KiwiException {
         int taskNumber = Parser.parseTaskNumber(command, "unmark");
         int index = taskNumber - 1;
 
@@ -132,10 +113,10 @@ public class Kiwi {
 
         tasks.unmarkTask(index);
         saveTasksToStorage();
-        ui.showTaskUnmarked(tasks.getTask(index));
+        return "OK, I've marked this task as not done yet:\n" + tasks.getTask(index);
     }
 
-    private void handleDeleteCommand(String command) throws KiwiException {
+    private String handleDeleteCommand(String command) throws KiwiException {
         int taskNumber = Parser.parseTaskNumber(command, "delete");
         int index = taskNumber - 1;
 
@@ -145,18 +126,20 @@ public class Kiwi {
 
         Task deletedTask = tasks.deleteTask(index);
         saveTasksToStorage();
-        ui.showTaskDeleted(deletedTask, tasks.size());
+        return "Noted. I've removed this task:\n" + deletedTask +
+                "\nNow you have " + tasks.size() + " tasks in the list.";
     }
 
-    private void handleTodoCommand(String command) throws KiwiException {
+    private String handleTodoCommand(String command) throws KiwiException {
         String description = Parser.parseTodoCommand(command);
         Todo todo = new Todo(description);
         tasks.addTask(todo);
         saveTasksToStorage();
-        ui.showTaskAdded(todo, tasks.size());
+        return "Got it. I've added this task:\n" + todo +
+                "\nNow you have " + tasks.size() + " tasks in the list.";
     }
 
-    private void handleDeadlineCommand(String command) throws KiwiException {
+    private String handleDeadlineCommand(String command) throws KiwiException {
         String[] parts = Parser.parseDeadlineCommand(command);
         String description = parts[0];
         String deadline = parts[1];
@@ -164,10 +147,11 @@ public class Kiwi {
         Deadline task = new Deadline(description, deadline);
         tasks.addTask(task);
         saveTasksToStorage();
-        ui.showTaskAdded(task, tasks.size());
+        return "Got it. I've added this task:\n" + task +
+                "\nNow you have " + tasks.size() + " tasks in the list.";
     }
 
-    private void handleEventCommand(String command) throws KiwiException {
+    private String handleEventCommand(String command) throws KiwiException {
         String[] parts = Parser.parseEventCommand(command);
         String description = parts[0];
         String from = parts[1];
@@ -176,28 +160,46 @@ public class Kiwi {
         Event event = new Event(description, from, to);
         tasks.addTask(event);
         saveTasksToStorage();
-        ui.showTaskAdded(event, tasks.size());
+        return "Got it. I've added this task:\n" + event +
+                "\nNow you have " + tasks.size() + " tasks in the list.";
     }
 
-    private void handleOnCommand(String command) throws KiwiException {
+    private String handleOnCommand(String command) throws KiwiException {
         LocalDate targetDate = Parser.parseOnCommand(command);
         List<Task> tasksOnDate = tasks.getTasksOnDate(targetDate);
         String formattedDate = DateTimeParser.formatDate(targetDate);
-        ui.showTasksOnDate(tasksOnDate, formattedDate);
+
+        if (tasksOnDate.isEmpty()) {
+            return "No tasks found on " + formattedDate + ".";
+        } else {
+            StringBuilder response = new StringBuilder("Here are the tasks on " + formattedDate + ":\n");
+            for (int i = 0; i < tasksOnDate.size(); i++) {
+                response.append(i + 1).append(".").append(tasksOnDate.get(i)).append("\n");
+            }
+            return response.toString();
+        }
     }
 
-    /**
-     * Saves tasks to storage.
-     */
+    private String handleFindCommand(String command) throws KiwiException {
+        String keyword = Parser.parseFindCommand(command);
+        List<Task> foundTasks = tasks.findTasks(keyword);
+
+        if (foundTasks.isEmpty()) {
+            return "No matching tasks found.";
+        } else {
+            StringBuilder response = new StringBuilder("Here are the matching tasks in your list:\n");
+            for (int i = 0; i < foundTasks.size(); i++) {
+                response.append(i + 1).append(".").append(foundTasks.get(i)).append("\n");
+            }
+            return response.toString();
+        }
+    }
+
     private void saveTasksToStorage() {
         try {
             storage.saveTasks(tasks.getTasks());
         } catch (KiwiException e) {
-            ui.showError("Warning: Could not save tasks - " + e.getMessage());
+            // Silent fail for GUI, could implement error dialog if needed
         }
-    }
-
-    public static void main(String[] args) {
-        new Kiwi("./data/kiwi.txt").run();
     }
 }

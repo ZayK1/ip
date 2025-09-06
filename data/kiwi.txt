@@ -4,3 +4,4 @@ D | 0 | submit report | 2019-12-02
 D | 0 | return book | 2/12/2019 1800
 E | 0 | meeting | 2019-12-01 | 2019-12-02
 E | 0 | conference | 1/1/2020 0900 | 1/1/2020 1700
+T | 0 | maths

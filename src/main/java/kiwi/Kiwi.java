@@ -15,20 +15,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Main class for the Kiwi task manager application.
+ * Main class for the Kiwi task manager applications.
  */
 public class Kiwi {
-    private static final String BYE_MESSAGE = "Bye! Hope to see you again soon!";
-    private static final String TASK_COUNT_MESSAGE = "\nNow you have %d tasks in the list.";
-    private static final String TASK_ADDED_MESSAGE = "Got it. I've added this task:\n%s" + TASK_COUNT_MESSAGE;
-    private static final String TASK_MARKED_DONE_MESSAGE = "Nice! I've marked this task as done:\n%s";
-    private static final String TASK_MARKED_UNDONE_MESSAGE = "OK, I've marked this task as not done yet:\n%s";
-    private static final String TASK_DELETED_MESSAGE = "Noted. I've removed this task:\n%s" + TASK_COUNT_MESSAGE;
-    private static final String NO_TASKS_MESSAGE = "You have no tasks in your list.";
-    private static final String TASKS_LIST_HEADER = "Here are the tasks in your list:\n";
-    private static final String ERROR_PREFIX = "Error: ";
-    private static final String UNEXPECTED_ERROR_PREFIX = "Something unexpected happened: ";
-    
     private Storage storage;
     private TaskList tasks;
 
@@ -46,19 +35,14 @@ public class Kiwi {
 
     /**
      * Generates a response for the user's chat message.
-     * AI-assisted improvement: Enhanced error handling and input validation
      */
     public String getResponse(String input) {
-        // AI-suggested input validation
-        if (input == null || input.trim().isEmpty()) {
-            return "Please enter a command!";
-        }
         try {
             Parser.CommandType commandType = Parser.getCommandType(input);
 
             switch (commandType) {
                 case BYE:
-                    return BYE_MESSAGE;
+                    return "Bye! Hope to see you again soon!";
 
                 case LIST:
                     return handleListCommand();
@@ -99,15 +83,11 @@ public class Kiwi {
         }
     }
 
-    /**
-     * AI-assisted improvement: Added task count display for better user feedback
-     */
     private String handleListCommand() {
         if (tasks.size() == 0) {
             return "You have no tasks in your list.";
         }
-        return String.format("You have %d tasks in your list:\n%s", 
-                           tasks.size(), tasks.toString());
+        return "Here are the tasks in your list:\n" + tasks.toString();
     }
 
     private String handleMarkCommand(String command) throws KiwiException {
@@ -133,7 +113,7 @@ public class Kiwi {
 
         tasks.unmarkTask(index);
         saveTasksToStorage();
-        return "OK, I've marked this task as not done yet:\n" + tasks.getTask(index);
+        return "Okay, I've marked this task as not done yet:\n" + tasks.getTask(index);
     }
 
     private String handleDeleteCommand(String command) throws KiwiException {

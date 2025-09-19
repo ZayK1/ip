@@ -2,7 +2,6 @@ package kiwi.task;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 /**
  * Manages a list of tasks.
  */
@@ -81,35 +80,47 @@ public class TaskList {
      * Returns tasks that occur on a specific date.
      */
     public List<Task> getTasksOnDate(java.time.LocalDate targetDate) {
-        return tasks.stream()
-                .filter(task -> {
-                    if (task instanceof Deadline) {
-                        Deadline deadline = (Deadline) task;
-                        return deadline.getDate() != null && deadline.getDate().equals(targetDate);
-                    } else if (task instanceof Event) {
-                        Event event = (Event) task;
-                        java.time.LocalDate startDate = event.getStartDate();
-                        java.time.LocalDate endDate = event.getEndDate();
-                        
-                        if (startDate != null && endDate != null) {
-                            return !targetDate.isBefore(startDate) && !targetDate.isAfter(endDate);
-                        } else if (startDate != null) {
-                            return startDate.equals(targetDate);
-                        }
+        List<Task> tasksOnDate = new ArrayList<>();
+
+        for (Task task : tasks) {
+            if (task instanceof Deadline) {
+                Deadline deadline = (Deadline) task;
+                if (deadline.getDate() != null && deadline.getDate().equals(targetDate)) {
+                    tasksOnDate.add(task);
+                }
+            } else if (task instanceof Event) {
+                Event event = (Event) task;
+                java.time.LocalDate startDate = event.getStartDate();
+                java.time.LocalDate endDate = event.getEndDate();
+
+                // Check if target date falls within event date range
+                if (startDate != null && endDate != null) {
+                    if (!targetDate.isBefore(startDate) && !targetDate.isAfter(endDate)) {
+                        tasksOnDate.add(task);
                     }
-                    return false;
-                })
-                .collect(Collectors.toList());
+                } else if (startDate != null && startDate.equals(targetDate)) {
+                    tasksOnDate.add(task);
+                }
+            }
+        }
+
+        return tasksOnDate;
     }
 
     /**
      * Returns tasks that contain the specified keyword in their description.
      */
     public List<Task> findTasks(String keyword) {
+        List<Task> matchingTasks = new ArrayList<>();
         String lowerKeyword = keyword.toLowerCase();
-        return tasks.stream()
-                .filter(task -> task.getDescription().toLowerCase().contains(lowerKeyword))
-                .collect(Collectors.toList());
+
+        for (Task task : tasks) {
+            if (task.getDescription().toLowerCase().contains(lowerKeyword)) {
+                matchingTasks.add(task);
+            }
+        }
+
+        return matchingTasks;
     }
 
     @Override
@@ -117,10 +128,11 @@ public class TaskList {
         if (tasks.isEmpty()) {
             return "No tasks in your list.";
         }
-        
-        return "Here are the tasks in your list:\n" + 
-               tasks.stream()
-                    .map(task -> (tasks.indexOf(task) + 1) + "." + task + "\n")
-                    .collect(Collectors.joining());
+        StringBuilder sb = new StringBuilder();
+        sb.append("Here are the tasks in your list:\n");
+        for (int i = 0; i < tasks.size(); i++) {
+            sb.append((i + 1) + "." + tasks.get(i) + "\n");
+        }
+        return sb.toString();
     }
 }

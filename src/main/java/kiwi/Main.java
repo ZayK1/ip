@@ -24,7 +24,9 @@ public class Main extends Application {
             Scene scene = new Scene(ap);
             stage.setScene(scene);
             stage.setTitle("Kiwi Task Manager");
-            stage.setResizable(false);
+            stage.setResizable(true);
+            stage.setMinWidth(500);
+            stage.setMinHeight(600);
             fxmlLoader.<MainWindow>getController().setKiwi(kiwi);
             stage.show();
         } catch (IOException e) {

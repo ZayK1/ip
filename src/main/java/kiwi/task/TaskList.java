@@ -131,7 +131,7 @@ public class TaskList {
         StringBuilder sb = new StringBuilder();
         sb.append("Here are the tasks in your list:\n");
         for (int i = 0; i < tasks.size(); i++) {
-            sb.append((i + 1) + "." + tasks.get(i) + "\n");
+            sb.append((i + 1) + ". " + tasks.get(i) + "\n");
         }
         return sb.toString();
     }

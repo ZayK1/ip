@@ -89,9 +89,9 @@ Format: `list`
 ```
 You have 3 tasks in your list:
 Here are the tasks in your list:
-1.[T][ ] read book
-2.[D][ ] submit report (by: Dec 1 2024)
-3.[E][ ] project meeting (from: Nov 20 2024 to: Nov 21 2024)
+1. [T][ ] read book
+2. [D][ ] submit report (by: Dec 1 2024)
+3. [E][ ] project meeting (from: Nov 20 2024 to: Nov 21 2024)
 ```
 
 ### Marking a task as done : `mark`
@@ -142,8 +142,8 @@ Examples:
 
 ```
 Here are the matching tasks in your list:
-1.[T][ ] read book
-2.[E][ ] project meeting (from: Nov 20 2024 to: Nov 21 2024)
+1. [T][ ] read book
+2. [E][ ] project meeting (from: Nov 20 2024 to: Nov 21 2024)
 ```
 
 ### Finding tasks by date: `on`
@@ -160,7 +160,7 @@ Examples:
 
 ```
 Here are the tasks on Dec 1 2024:
-1.[D][ ] submit report (by: Dec 1 2024)
+1. [D][ ] submit report (by: Dec 1 2024)
 ```
 
 ### Sorting tasks chronologically: `sort`

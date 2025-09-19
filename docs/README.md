@@ -1,4 +1,4 @@
-# Kiwi User Guide
+# Kiwi User Guide 🥝
 
 ![Kiwi Screenshot](Ui.png)
 

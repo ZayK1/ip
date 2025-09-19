@@ -54,7 +54,7 @@ public class Parser {
         if (input.trim().equals("todo") || input.length() <= 4 || input.substring(4).trim().isEmpty()) {
             throw new EmptyDescriptionException("todo");
         }
-        return input.substring(5).trim();
+        return input.substring(6).trim();
     }
 
     /**

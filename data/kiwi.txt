@@ -1,1 +1,1 @@
-T | 0 | o Read "Clean Code" by Robert Martin
+T | 0 | Read "Clean Code" by Robert Martin

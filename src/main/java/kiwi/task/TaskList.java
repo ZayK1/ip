@@ -19,6 +19,7 @@ public class TaskList {
      * Adds a task to the list.
      */
     public void addTask(Task task) {
+        assert task != null : "Task cannot be null";
         this.tasks.add(task);
     }
 
@@ -26,6 +27,7 @@ public class TaskList {
      * Deletes a task from the list by index.
      */
     public Task deleteTask(int index) {
+        assert isValidIndex(index) : "Index must be valid before deletion";
         return this.tasks.remove(index);
     }
 
@@ -33,6 +35,7 @@ public class TaskList {
      * Gets a task by index.
      */
     public Task getTask(int index) {
+        assert isValidIndex(index) : "Index must be valid to get task";
         return this.tasks.get(index);
     }
 
@@ -40,6 +43,7 @@ public class TaskList {
      * Marks a task as done.
      */
     public void markTask(int index) {
+        assert isValidIndex(index) : "Index must be valid to mark task";
         this.tasks.get(index).mark();
     }
 
@@ -47,6 +51,7 @@ public class TaskList {
      * Marks a task as not done.
      */
     public void unmarkTask(int index) {
+        assert isValidIndex(index) : "Index must be valid to unmark task";
         this.tasks.get(index).unmark();
     }
 

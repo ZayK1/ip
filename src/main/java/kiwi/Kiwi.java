@@ -46,8 +46,13 @@ public class Kiwi {
 
     /**
      * Generates a response for the user's chat message.
+     * AI-assisted improvement: Enhanced error handling and input validation
      */
     public String getResponse(String input) {
+        // AI-suggested input validation
+        if (input == null || input.trim().isEmpty()) {
+            return "Please enter a command!";
+        }
         try {
             Parser.CommandType commandType = Parser.getCommandType(input);
 
@@ -94,11 +99,15 @@ public class Kiwi {
         }
     }
 
+    /**
+     * AI-assisted improvement: Added task count display for better user feedback
+     */
     private String handleListCommand() {
         if (tasks.size() == 0) {
             return "You have no tasks in your list.";
         }
-        return "Here are the tasks in your list:\n" + tasks.toString();
+        return String.format("You have %d tasks in your list:\n%s", 
+                           tasks.size(), tasks.toString());
     }
 
     private String handleMarkCommand(String command) throws KiwiException {

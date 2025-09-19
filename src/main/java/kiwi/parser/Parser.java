@@ -50,6 +50,7 @@ public class Parser {
      * Parses a todo command and returns the description.
      */
     public static String parseTodoCommand(String input) throws KiwiException {
+        assert input != null : "Input cannot be null";
         if (input.trim().equals("todo") || input.length() <= 4 || input.substring(4).trim().isEmpty()) {
             throw new EmptyDescriptionException("todo");
         }
@@ -60,6 +61,7 @@ public class Parser {
      * Parses a deadline command and returns description and deadline.
      */
     public static String[] parseDeadlineCommand(String input) throws KiwiException {
+        assert input != null : "Input cannot be null";
         if (input.trim().equals("deadline")) {
             throw new EmptyDescriptionException("deadline");
         }
@@ -124,6 +126,7 @@ public class Parser {
      * Parses a mark/unmark command and returns the task number.
      */
     public static int parseTaskNumber(String input, String commandType) throws KiwiException {
+        assert commandType != null : "Command type cannot be null";
         try {
             String[] parts = input.split(" ");
             if (parts.length < 2) {

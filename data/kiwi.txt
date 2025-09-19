@@ -1,4 +1,4 @@
-T | 1 | Read "Clean Code" by Robert Martin
-D | 0 | Submit CS2103T project | 2024-12-01
-E | 0 | Team meeting | 2024-11-25 | 2024-11-25
+E | 1 | Team meeting | 2024-11-25 | 2024-11-25
 D | 0 | Pay bills | 2024-11-30
+D | 0 | Submit CS2103T project | 2024-12-01
+T | 1 | Read "Clean Code" by Robert Martin

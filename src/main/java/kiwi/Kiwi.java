@@ -28,6 +28,7 @@ public class Kiwi {
     private static final String TASKS_LIST_HEADER = "Here are the tasks in your list:\n";
     private static final String ERROR_PREFIX = "Error: ";
     private static final String UNEXPECTED_ERROR_PREFIX = "Something unexpected happened: ";
+    private static final String TASKS_SORTED_MESSAGE = "Tasks have been sorted chronologically!";
     
     private Storage storage;
     private TaskList tasks;
@@ -81,6 +82,9 @@ public class Kiwi {
 
                 case FIND:
                     return handleFindCommand(input);
+
+                case SORT:
+                    return handleSortCommand();
 
                 case UNKNOWN:
                 default:
@@ -204,6 +208,12 @@ public class Kiwi {
             }
             return response.toString();
         }
+    }
+
+    private String handleSortCommand() {
+        tasks.sortTasks();
+        saveTasksToStorage();
+        return TASKS_SORTED_MESSAGE;
     }
 
     private void saveTasksToStorage() {

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class Parser {
 
     public enum CommandType {
-        BYE, LIST, MARK, UNMARK, DELETE, TODO, DEADLINE, EVENT, FIND, ON, UNKNOWN
+        BYE, LIST, MARK, UNMARK, DELETE, TODO, DEADLINE, EVENT, FIND, ON, SORT, UNKNOWN
     }
 
     /**
@@ -41,6 +41,8 @@ public class Parser {
             return CommandType.ON;
         } else if (trimmed.startsWith("find ")) {
             return CommandType.FIND;
+        } else if (trimmed.equals("sort")) {
+            return CommandType.SORT;
         } else {
             return CommandType.UNKNOWN;
         }
@@ -54,7 +56,7 @@ public class Parser {
         if (input.trim().equals("todo") || input.length() <= 4 || input.substring(4).trim().isEmpty()) {
             throw new EmptyDescriptionException("todo");
         }
-        return input.substring(6).trim();
+        return input.substring(5).trim();
     }
 
     /**

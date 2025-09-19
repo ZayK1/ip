@@ -2,6 +2,7 @@ package kiwi.task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Comparator;
 /**
  * Manages a list of tasks.
  */
@@ -121,6 +122,45 @@ public class TaskList {
         }
 
         return matchingTasks;
+    }
+
+    /**
+     * Sorts tasks chronologically by their dates (deadlines first, then events, then todos).
+     */
+    public void sortTasks() {
+        tasks.sort(new Comparator<Task>() {
+            @Override
+            public int compare(Task t1, Task t2) {
+                // Get comparable dates for sorting
+                java.time.LocalDate date1 = getTaskDate(t1);
+                java.time.LocalDate date2 = getTaskDate(t2);
+                
+                // If both have dates, compare them
+                if (date1 != null && date2 != null) {
+                    return date1.compareTo(date2);
+                }
+                
+                // Tasks with dates come before tasks without dates
+                if (date1 != null && date2 == null) {
+                    return -1;
+                }
+                if (date1 == null && date2 != null) {
+                    return 1;
+                }
+                
+                // If neither has dates, maintain original order
+                return 0;
+            }
+            
+            private java.time.LocalDate getTaskDate(Task task) {
+                if (task instanceof Deadline) {
+                    return ((Deadline) task).getDate();
+                } else if (task instanceof Event) {
+                    return ((Event) task).getStartDate();
+                }
+                return null; // Todo tasks have no date
+            }
+        });
     }
 
     @Override

@@ -71,6 +71,9 @@ public class Kiwi {
                 case FIND:
                     return handleFindCommand(input);
 
+                case SORT:
+                    return handleSortCommand();
+
                 case UNKNOWN:
                 default:
                     throw new UnknownCommandException();
@@ -87,7 +90,7 @@ public class Kiwi {
         if (tasks.size() == 0) {
             return "You have no tasks in your list.";
         }
-        return "Here are the tasks in your list:\n" + tasks.toString();
+        return tasks.toString();
     }
 
     private String handleMarkCommand(String command) throws KiwiException {
@@ -193,6 +196,12 @@ public class Kiwi {
             }
             return response.toString();
         }
+    }
+
+    private String handleSortCommand() {
+        tasks.sortTasks();
+        saveTasksToStorage();
+        return "Tasks have been sorted chronologically!";
     }
 
     private void saveTasksToStorage() {
